@@ -286,10 +286,10 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<maven.compiler.encoding>UTF-8</maven.compiler.encoding>
 
-        <elasticsearch.version>5.5.0</elasticsearch.version>
-        <slf4j.version>1.7.25</slf4j.version>
-        <log4j.version>2.8.2</log4j.version>
-
+		<elasticsearch.version>5.5.0</elasticsearch.version>
+		<slf4j.version>1.7.25</slf4j.version>
+		<log4j.version>2.8.2</log4j.version>
+		<docker.project.version>${project.version}</docker.project.version>
 		<additionalparam>-Xdoclint:none</additionalparam>
 	</properties>
 

@@ -26,6 +26,7 @@ COPY docker-entrypoint.sh /photon/docker-entrypoint.sh
 RUN chmod ugo+x /photon/docker-entrypoint.sh
 
 COPY maven/ /photon/
+ENV PHOTON_VERSION=@docker.project.version@
 
 ENTRYPOINT ["/photon/docker-entrypoint.sh"]
 
