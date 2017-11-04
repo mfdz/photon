@@ -255,7 +255,7 @@
 				<configuration>
 					<images>
 						<image>
-							<name>hub.gerhardt.io/mfdz/photon</name>
+							<name>mfdz/photon</name>
 							<build>
 								<filter>@</filter>
 								<dockerFileDir>${project.basedir}/src/main/docker</dockerFileDir>
