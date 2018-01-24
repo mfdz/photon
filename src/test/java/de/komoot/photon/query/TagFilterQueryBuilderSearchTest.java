@@ -241,7 +241,7 @@ public class TagFilterQueryBuilderSearchTest extends ESBaseTester {
     private PhotonDoc createDoc(int id, String key, String value) {
         ImmutableMap<String, String> nameMap = ImmutableMap.of("name", "berlin");
         Point location = FACTORY.createPoint(new Coordinate(10., 47.));
-        return new PhotonDoc(id, "way", id, key, value, nameMap, null, null, null, 0, 0.5, null, location, 0, 0);
+        return new PhotonDoc(id, "way", id, key, value, nameMap, null, null, null, null, 0, 0.5, null, location, 0, 0);
     }
 
 
