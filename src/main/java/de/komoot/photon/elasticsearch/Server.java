@@ -8,6 +8,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.node.InternalSettingsPreparer;
 import org.elasticsearch.node.Node;
@@ -150,30 +151,39 @@ public class Server {
         final File photonDirectory = new File(mainDirectory, "photon_data");
         this.esDirectory = new File(photonDirectory, "elasticsearch");
         final File pluginDirectory = new File(esDirectory, "plugins");
-        final File scriptsDirectory = new File(esDirectory, "config/scripts");
+        final File analysisDirectory = new File(esDirectory, "config/analysis");
         final File painlessDirectory = new File(esDirectory, "modules/lang-painless");
 
-        for (File directory : new File[]{photonDirectory, esDirectory, pluginDirectory, scriptsDirectory,
-                painlessDirectory}) {
+        for (File directory : new File[]{photonDirectory, esDirectory, pluginDirectory,
+                painlessDirectory, analysisDirectory}) {
             directory.mkdirs();
         }
 
-        // copy script directory to elastic search directory
+        // copy modules and config to elastic search directory
+        copyOrReplace("modules/lang-painless/antlr4-runtime-4.5.1-1.jar",
+                        new File(painlessDirectory, "antlr4-runtime-4.5.1-1.jar"));
+        copyOrReplace("modules/lang-painless/asm-debug-all-5.1.jar",
+                        new File(painlessDirectory, "asm-debug-all-5.1.jar"));
+        copyOrReplace("modules/lang-painless/lang-painless-5.5.0.jar",
+                        new File(painlessDirectory, "lang-painless-5.5.0.jar"));
+        copyOrReplace("modules/lang-painless/plugin-descriptor.properties",
+                        new File(painlessDirectory, "plugin-descriptor.properties"));
+        copyOrReplace("modules/lang-painless/plugin-security.policy",
+                        new File(painlessDirectory, "plugin-security.policy"));
+
+        copyOrReplace("config/analysis/hyphenation_patterns.xml",
+                        new File(analysisDirectory, "hyphenation_patterns.xml"));
+
+        copyOrReplace("modules/photon-es/photon-es.jar",
+                        new File(painlessDirectory, "photon-es.jar"));
+        copyOrReplace("modules/photon-es/plugin-descriptor.properties",
+                        new File(painlessDirectory, "plugin-descriptor.properties"));
+    }
+
+    private void copyOrReplace(String resource, File destination) throws IOException {
         final ClassLoader loader = Thread.currentThread().getContextClassLoader();
-
-        Files.copy(loader.getResourceAsStream("modules/lang-painless/antlr4-runtime-4.5.1-1.jar"),
-                new File(painlessDirectory, "antlr4-runtime-4.5.1-1.jar").toPath(),
-                StandardCopyOption.REPLACE_EXISTING);
-        Files.copy(loader.getResourceAsStream("modules/lang-painless/asm-debug-all-5.1.jar"),
-                new File(painlessDirectory, "asm-debug-all-5.1.jar").toPath(), StandardCopyOption.REPLACE_EXISTING);
-        Files.copy(loader.getResourceAsStream("modules/lang-painless/lang-painless-5.5.0.jar"),
-                new File(painlessDirectory, "lang-painless-5.5.0.jar").toPath(), StandardCopyOption.REPLACE_EXISTING);
-        Files.copy(loader.getResourceAsStream("modules/lang-painless/plugin-descriptor.properties"),
-                new File(painlessDirectory, "plugin-descriptor.properties").toPath(),
-                StandardCopyOption.REPLACE_EXISTING);
-        Files.copy(loader.getResourceAsStream("modules/lang-painless/plugin-security.policy"),
-                new File(painlessDirectory, "plugin-security.policy").toPath(), StandardCopyOption.REPLACE_EXISTING);
-
+        Files.copy(loader.getResourceAsStream(resource), destination.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
     }
 
     public void recreateIndex() throws IOException {
@@ -190,10 +200,12 @@ public class Server {
 
         // add all langs to the mapping
         mappingsJSON = addLangsToMapping(mappingsJSON);
-        client.admin().indices().prepareCreate("photon").setSettings(IOUtils.toString(index_settings)).execute()
-                .actionGet();
-        client.admin().indices().preparePutMapping("photon").setType("place").setSource(mappingsJSON.toString())
-                .execute().actionGet();
+        client.admin().indices().prepareCreate("photon")
+                        .setSettings(IOUtils.toString(index_settings), XContentType.JSON).execute()
+                        .actionGet();
+        client.admin().indices().preparePutMapping("photon").setType("place")
+                        .setSource(mappingsJSON.toString(), XContentType.JSON).execute()
+                        .actionGet();
         log.info("mapping created: " + mappingsJSON.toString());
     }
 
