@@ -43,6 +43,21 @@ public class AddressRow {
         return 26 <= rankAddress && rankAddress < 28;
     }
 
+    public boolean isNeighbourhood() {
+        if ("place".equals(osmKey) && "neighbourhood".equals(osmValue)) {
+            return true;
+        }
+        // TODO admin?
+        return false;
+    }
+    
+    public boolean isSuburb() {
+        if ("place".equals(osmKey) && "suburb".equals(osmValue)) {
+            return true;
+        }
+        // TODO admin?
+        return false;
+    }
     public boolean isCity() {
         if ("place".equals(osmKey) && Arrays.binarySearch(CITY_PLACE_VALUES, osmValue) >= 0) {
             return true;

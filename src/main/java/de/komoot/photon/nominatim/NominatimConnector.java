@@ -142,6 +142,7 @@ public class NominatimConnector {
                     "house_number",
                     Collections.<String, String>emptyMap(), // no name
                     (String) null,
+                    Collections.<String, String>emptyMap(), // no address
                     Collections.<String, String>emptyMap(), // no extratags
                     (Envelope) null,
                     rs.getLong("parent_place_id"),
@@ -185,6 +186,7 @@ public class NominatimConnector {
                     rs.getString("type"),
                     DBUtils.getMap(rs, "name"),
                     (String) null,
+                    DBUtils.getMap(rs, "address"),
                     DBUtils.getMap(rs, "extratags"),
                     envelope,
                     rs.getLong("parent_place_id"),
@@ -204,7 +206,7 @@ public class NominatimConnector {
             return result;
         }
     };
-    private final String selectColsPlaceX = "place_id, osm_type, osm_id, class, type, name, housenumber, postcode, extratags, ST_Envelope(geometry) AS bbox, parent_place_id, linked_place_id, rank_search, importance, country_code, centroid";
+    private final String selectColsPlaceX = "place_id, osm_type, osm_id, class, type, name, housenumber, postcode, address, extratags, ST_Envelope(geometry) AS bbox, parent_place_id, linked_place_id, rank_search, importance, country_code, centroid";
     private Importer importer;
 
     private Map<String, String> getCountryNames(String countrycode) {
@@ -277,7 +279,7 @@ public class NominatimConnector {
         });
     }
 
-    private static final PhotonDoc FINAL_DOCUMENT = new PhotonDoc(0, null, 0, null, null, null, null, null, null, 0, 0, null, null, 0, 0);
+    private static final PhotonDoc FINAL_DOCUMENT = new PhotonDoc(0, null, 0, null, null, null, null, null, null, null, 0, 0, null, null, 0, 0);
 
     private class ImportThread implements Runnable {
         private final BlockingQueue<PhotonDoc> documents;
@@ -469,6 +471,16 @@ public class NominatimConnector {
                 continue;
             }
 
+            if (address.isNeighbourhood() && doc.getNeighbourhood() == null) {
+                doc.setNeighbourhood(address.getName());
+                continue;
+            }
+
+            if (address.isSuburb() && doc.getSuburb() == null) {
+                doc.setSuburb(address.getName());
+                continue;
+            }
+
             if (address.isState() && doc.getState() == null) {
                 doc.setState(address.getName());
                 continue;
@@ -479,5 +491,8 @@ public class NominatimConnector {
                 doc.getContext().add(address.getName());
             }
         }
+        // finally, overwrite gathered information with higher prio
+        // address info from nominatim which should have precedence
+        doc.completeFromAddress();
     }
 }
