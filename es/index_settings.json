@@ -2,11 +2,17 @@
 	"analysis": {
 		"analyzer": {
 			"index_ngram": {
+				"char_filter": [
+					"punctuationgreedy",
+					"remove_ws_hnr_suffix"
+				],
 				"tokenizer": "edge_ngram",
 				"filter": [
+					"preserving_word_delimiter",
 					"lowercase",
 					"german_normalization",
 					"photon_hyphenation_decompounder"
+					"unique"
 				]
 			},
 			"search_ngram": {
@@ -47,6 +53,16 @@
 					"unique"
 				],
 				"tokenizer": "standard"
+			},
+			"index_housenumber": {
+				"char_filter": [
+					"punctuationgreedy",
+					"remove_ws_hnr_suffix"
+				],
+				"filter": [
+					"lowercase",
+					"preserving_word_delimiter"],
+				"tokenizer": "standard" 
 			}
 		},
 		"tokenizer": {
@@ -65,6 +81,11 @@
 				"type": "pattern_replace",
 				"pattern": "[\\.,']",
 				"replacement": " "
+			},
+			"remove_ws_hnr_suffix": {
+				"type": "pattern_replace",
+				"pattern": "(\\d+)\\s(?=\\p{L}\\b)",
+				"replacement": "$1"
 			}
 		},
 		"filter": {
@@ -76,6 +97,10 @@
 				"type" : "photon_hyphenation_decompounder",
 				"hyphenation_patterns_path": "analysis/hyphenation_patterns.xml",
 				"min_word_size": 6
+			},
+			"preserving_word_delimiter": { 
+				"type": "word_delimiter",
+				"preserve_original": "true"
 			}
 		}
 	}
