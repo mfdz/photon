@@ -10,6 +10,9 @@
 				]
 			},
 			"search_ngram": {
+				"char_filter": [
+					"punctuationgreedy"
+				],
 				"tokenizer": "standard",
 				"filter": [
 					"lowercase",
@@ -60,7 +63,8 @@
 		"char_filter": {
 			"punctuationgreedy": {
 				"type": "pattern_replace",
-				"pattern": "[\\.,]"
+				"pattern": "[\\.,']",
+				"replacement": " "
 			}
 		},
 		"filter": {
