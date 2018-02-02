@@ -6,9 +6,10 @@ ARG PHOTON_LANGUAGES
 ENV PHOTON_LANGUAGES ${PHOTON_LANGUAGES:-"de,en,fr"}
 
 # If photon-db does not exist in /photon/photon_data, the following properties 
-# will be used to create index from nominatim
+# will be used to import json dump file (if existant) or create index from nominatim 
 ENV NOMINATIM_PORT_5432_TCP_ADDR nominatim
 ENV NOMINATIM_PORT_5432_TCP_PORT 5432
+ENV JSON_DUMP_FILE /photon/photon_data/photon_db.json
 
 # Download photon release
 RUN mkdir /photon \
