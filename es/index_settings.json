@@ -11,7 +11,7 @@
 					"preserving_word_delimiter",
 					"lowercase",
 					"german_normalization",
-					"photon_hyphenation_decompounder"
+					"photon_hyphenation_decompounder",
 					"unique"
 				]
 			},
