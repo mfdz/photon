@@ -1,6 +1,5 @@
 package de.komoot.photon.searcher;
 
-import com.vividsolutions.jts.geom.Point;
 import de.komoot.photon.query.PhotonQueryBuilder;
 import de.komoot.photon.query.PhotonRequest;
 import de.komoot.photon.query.TagFilterQueryBuilder;
@@ -15,8 +14,8 @@ public class SimplePhotonRequestHandler extends AbstractPhotonRequestHandler<Pho
 
     @Override
     public TagFilterQueryBuilder buildQuery(PhotonRequest photonRequest) {
-        Point point = photonRequest.getLocationForBias();
-
-        return PhotonQueryBuilder.builder(photonRequest.getQuery(), photonRequest.getLanguage()).withLocationBias(point, photonRequest.getFormula());
+        return PhotonQueryBuilder.builder(photonRequest.getQuery(), photonRequest.getLanguage()).
+                withLocationBias(photonRequest.getLocationForBias(), photonRequest.getScaleForBias()).
+                withBoundingBox(photonRequest.getBbox());
     }
 }

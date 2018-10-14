@@ -12,6 +12,7 @@
 					"lowercase",
 					"german_normalization",
 					"photon_hyphenation_decompounder",
+					"asciifolding",
 					"unique"
 				]
 			},
@@ -23,7 +24,8 @@
 				"filter": [
 					"lowercase",
 					"german_normalization",
-					"photon_hyphenation_decompounder"
+					"photon_hyphenation_decompounder",
+					"asciifolding"
 				]
 			},
 			"index_raw": {

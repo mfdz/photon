@@ -13,15 +13,13 @@ public class ReverseRequest implements Serializable {
     private Double radius;
     private Integer limit;
     private String queryStringFilter;
-    private String formula = "";
-
-    public ReverseRequest(Point location, String language, Double radius, String queryStringFilter, Integer limit, String formula) {
+    
+    public ReverseRequest(Point location, String language, Double radius, String queryStringFilter, int limit) {
         this.location = location;
         this.language = language;
         this.radius = radius;
         this.limit = limit;
         this.queryStringFilter = queryStringFilter;
-        this.formula = formula;
     }
 
     public Point getLocation() {
@@ -42,9 +40,5 @@ public class ReverseRequest implements Serializable {
 
     public String getQueryStringFilter() {
         return queryStringFilter;
-    }
-
-    public String getFormula() {
-        return formula;
     }
 }

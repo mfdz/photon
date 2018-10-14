@@ -1,6 +1,7 @@
 package de.komoot.photon.query;
 
 import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.PrecisionModel;
@@ -17,12 +18,16 @@ import java.util.Set;
  */
 public class PhotonRequestFactory {
     private final LanguageChecker languageChecker;
+    private final BoundingBoxParamConverter bboxParamConverter;
+    
     private final static GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
-    protected static HashSet<String> m_hsRequestQueryParams = new HashSet<>(Arrays.asList("formula", "lang", "q", "lon", "lat", "limit", "distance_sort", "osm_tag"));
+    protected static HashSet<String> m_hsRequestQueryParams = new HashSet<>(Arrays.asList("lang", "q", "lon", "lat",
+            "bbox", "limit", "osm_tag", "location_bias_scale"));
 
     public PhotonRequestFactory(Set<String> supportedLanguages) {
         this.languageChecker = new LanguageChecker(supportedLanguages);
+        this.bboxParamConverter = new BoundingBoxParamConverter();
     }
 
     public <R extends PhotonRequest> R create(Request webRequest) throws BadRequestException {
@@ -53,19 +58,24 @@ public class PhotonRequestFactory {
             //ignore
         }
 
-        String formula = webRequest.queryParamOrDefault("formula", "");
-        if (formula != null) {
-            if (!formula.isEmpty() && !formula.contains("dist"))
-                throw new BadRequestException(400, "formula must contain 'dist' parameter");
-            if (formula.contains(";"))
-                throw new BadRequestException(400, "formula must not contain semicolon");
-        }
+        
+        Envelope bbox = bboxParamConverter.apply(webRequest);
+        
+        // don't use too high default value, see #306
+        double scale = 1.6;
+        String scaleStr = webRequest.queryParams("location_bias_scale");
+        if (scaleStr != null && !scaleStr.isEmpty())
+            try {
+                scale = Double.parseDouble(scaleStr);
+            } catch (Exception nfe) {
+                throw new BadRequestException(400, "invalid parameter 'location_bias_scale' must be a number");
+            }
 
         QueryParamsMap tagFiltersQueryMap = webRequest.queryMap("osm_tag");
         if (!new CheckIfFilteredRequest().execute(tagFiltersQueryMap)) {
-            return (R) new PhotonRequest(query, limit, locationForBias, formula, language);
+            return (R) new PhotonRequest(query, limit, bbox, locationForBias, scale, language);
         }
-        FilteredPhotonRequest photonRequest = new FilteredPhotonRequest(query, limit, locationForBias, formula, language);
+        FilteredPhotonRequest photonRequest = new FilteredPhotonRequest(query, limit, bbox, locationForBias, scale, language);
         String[] tagFilters = tagFiltersQueryMap.values();
         setUpTagFilters(photonRequest, tagFilters);
 

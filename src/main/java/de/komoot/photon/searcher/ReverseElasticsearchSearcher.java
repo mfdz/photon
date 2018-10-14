@@ -22,14 +22,12 @@ public class ReverseElasticsearchSearcher implements ElasticsearchReverseSearche
     }
 
     @Override
-    public SearchResponse search(QueryBuilder queryBuilder, Integer limit, Point location,
-                                 String formula) {
+    public SearchResponse search(QueryBuilder queryBuilder, int limit, Point location) {
         TimeValue timeout = TimeValue.timeValueSeconds(7);
 
         SearchRequestBuilder builder = client.prepareSearch("photon").setSearchType(SearchType.QUERY_AND_FETCH)
                 .setQuery(queryBuilder).setSize(limit).setTimeout(timeout);
 
-        // TODO use formula
         builder.addSort(SortBuilders.geoDistanceSort("coordinate", new GeoPoint(location.getY(), location.getX()))
                 .order(SortOrder.ASC));
 

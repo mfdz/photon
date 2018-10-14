@@ -1,5 +1,6 @@
 package de.komoot.photon.query;
 
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Point;
 import org.elasticsearch.index.query.QueryBuilder;
 
@@ -22,11 +23,18 @@ public interface TagFilterQueryBuilder {
     TagFilterQueryBuilder withLimit(Integer limit);
 
     /**
+     * Search results will be filtered to places contained in the bounding box (WGS84) provided in the argument.
+     *
+     * @param bbox Geographical {@link Envelope}
+     */
+    TagFilterQueryBuilder withBoundingBox(Envelope bbox);
+
+    /**
      * Location bias for query. By setting this, places found will be sorted by proximity to this point.
      *
      * @param point Geographical {@link Point}
      */
-    TagFilterQueryBuilder withLocationBias(Point point, String formula);
+    TagFilterQueryBuilder withLocationBias(Point point, double scale);
 
     /**
      * Search results will be filtered to contain places having tags as provided in the argument. For example, if the argument contains

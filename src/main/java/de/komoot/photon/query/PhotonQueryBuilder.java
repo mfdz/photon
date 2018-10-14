@@ -2,6 +2,7 @@ package de.komoot.photon.query;
 
 
 import com.google.common.collect.ImmutableSet;
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Point;
 import org.elasticsearch.common.lucene.search.function.CombineFunction;
 import org.elasticsearch.common.lucene.search.function.FiltersFunctionScoreQuery.ScoreMode;
@@ -50,6 +51,8 @@ public class PhotonQueryBuilder implements TagFilterQueryBuilder {
     private MatchQueryBuilder defaultMatchQueryBuilder;
 
     private MatchQueryBuilder languageMatchQueryBuilder;
+
+    private GeoBoundingBoxQueryBuilder bboxQueryBuilder;
 
     private QueryBuilder m_finalQueryBuilder;
 
@@ -115,29 +118,33 @@ public class PhotonQueryBuilder implements TagFilterQueryBuilder {
         return this;
     }
 
-
     @Override
-    public TagFilterQueryBuilder withLocationBias(Point point, String formula) {
+    public TagFilterQueryBuilder withLocationBias(Point point, double scale) {
         if (point == null) return this;
         Map<String, Object> params = newHashMap();
         params.put("lon", point.getX());
         params.put("lat", point.getY());
 
-        if (formula.isEmpty())
-            formula = "0.1 + 0.5 / (1.0 + dist * 0.001 / 10.0)";
-
-        // distance unit from planeDistance is meter
-        String strCode = "double dist = doc['coordinate'].planeDistance(params.lat, params.lon); double score = " + formula + "; score";
+        scale = Math.abs(scale);
+        String strCode = "double dist = doc['coordinate'].planeDistance(params.lat, params.lon); " +
+                "double score = 0.1 + " + scale + " / (1.0 + dist * 0.001 / 10.0); " +
+                "score";
         ScriptScoreFunctionBuilder builder = ScoreFunctionBuilders.scriptFunction(new Script(ScriptType.INLINE, "painless", strCode, params));
-
         m_alFilterFunction4QueryBuilder.add(new FilterFunctionBuilder(builder));
         m_finalQueryWithoutTagFilterBuilder =
                 new FunctionScoreQueryBuilder(m_query4QueryBuilder, m_alFilterFunction4QueryBuilder.toArray(new FilterFunctionBuilder[0]))
-                        .boostMode(CombineFunction.MULTIPLY).scoreMode(ScoreMode.MULTIPLY);
-
+                        .boostMode(CombineFunction.MULTIPLY);
         return this;
     }
-
+    
+     @Override
+    public TagFilterQueryBuilder withBoundingBox(Envelope bbox) {
+        if (bbox == null) return this;
+        bboxQueryBuilder = new GeoBoundingBoxQueryBuilder("coordinate");
+        bboxQueryBuilder.setCorners(bbox.getMaxY(), bbox.getMinX(), bbox.getMinY(), bbox.getMaxX());
+        
+        return this;
+    }
 
     @Override
     public TagFilterQueryBuilder withTags(Map<String, Set<String>> tags) {
@@ -301,7 +308,8 @@ public class PhotonQueryBuilder implements TagFilterQueryBuilder {
 
 
     /**
-     * Subsequent invocations of this method have no additional effect. Note that after this method is called, calling other methods on this class also
+     * When this method is called, all filters are placed inside their {@link OrQueryBuilder OR} or {@link AndQueryBuilder AND} containers and the top level filter
+     * builder is built. Subsequent invocations of this method have no additional effect. Note that after this method is called, calling other methods on this class also
      * have no effect.
      *
      * @see TagFilterQueryBuilder#buildQuery()
@@ -318,6 +326,9 @@ public class PhotonQueryBuilder implements TagFilterQueryBuilder {
                 m_queryBuilderForTopLevelFilter.must(andQueryBuilderForExcludeTagFiltering);
 
         }
+        
+        if (bboxQueryBuilder != null) 
+            m_queryBuilderForTopLevelFilter.filter(bboxQueryBuilder);
 
         state = State.FINISHED;
 
