@@ -19,8 +19,8 @@ public class ReverseRequestFactoryTest {
     private ReverseRequest reverseRequest;
 
     public void requestWithLongitudeLatitude(Request mockRequest, Double longitude, Double latitude) {
-        Mockito.when(mockRequest.queryParamOrDefault("lon", "")).thenReturn(longitude.toString());
-        Mockito.when(mockRequest.queryParamOrDefault("lat", "")).thenReturn(latitude.toString());
+        Mockito.when(mockRequest.queryParams("lon")).thenReturn(longitude.toString());
+        Mockito.when(mockRequest.queryParams("lat")).thenReturn(latitude.toString());
     }
 
     @Test
