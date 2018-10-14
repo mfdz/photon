@@ -68,7 +68,7 @@ public class PhotonRequestFactoryTest {
             photonRequest = photonRequestFactory.create(mockRequest);
             Assert.fail();
         } catch (BadRequestException e) {
-            Assert.assertEquals("invalid term 'lat' and/or 'lon', try instead lat=51.5&lon=8.0", e.getMessage());
+            Assert.assertEquals("invalid search term 'lat' and/or 'lon', try instead lat=51.5&lon=8.0", e.getMessage());
         }
         
         Mockito.verify(mockRequest, Mockito.times(1)).queryParams("q");
