@@ -59,6 +59,12 @@ Check the URL `http://localhost:2322/api?q=berlin` to see if photon is running w
 
 discover more of photon's feature with its usage `java -jar photon-*.jar -h`.
 
+### Docker
+To build a docker image, run maven as follows:
+```bash
+mvn install docker:build
+```
+
 
 ### Customized Search Data
 If you need search data in other languages or restricted to a country you will need to create your search data by your own.
