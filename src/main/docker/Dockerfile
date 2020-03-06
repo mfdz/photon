@@ -1,20 +1,28 @@
-FROM openjdk:8
+FROM openjdk:8-slim
 
 MAINTAINER Holger Bruch <holger.bruch@mitfahrdezentrale.de>
 
 ARG PHOTON_LANGUAGES
 ENV PHOTON_LANGUAGES ${PHOTON_LANGUAGES:-"de,en,fr"}
 
-# If photon-db does not exist in /photon/photon_data, the following properties 
-# will be used to import json dump file (if existant) or create index from nominatim 
+# If photon-db does not exist in /photon/photon_data, the following properties
+# will be used to import json dump file (if existant) or create index from nominatim
 ENV NOMINATIM_PORT_5432_TCP_ADDR nominatim
 ENV NOMINATIM_PORT_5432_TCP_PORT 5432
 ENV JSON_DUMP_FILE /photon/photon_data/photon_db.json
 
+# run the update every day at 5 o'clock
+ADD nominatim-update /usr/local/bin/nominatim-update
+RUN chmod g+w,o-rw,a+x /usr/local/bin/nominatim-update
+ADD crontab /etc/cron.d/nominatim-update
+RUN chmod 0644 /etc/cron.d/nominatim-update
+RUN touch /var/log/nominatim-update.log
+RUN apt-get update && apt-get -y install cron curl
+
 # Download photon release
 RUN mkdir /photon \
-	&& cd /photon 
-	
+	&& cd /photon
+
 WORKDIR /photon
 
 # Expose Photon Webservice and Elastic Search (ES)
