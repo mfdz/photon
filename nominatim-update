@@ -1,0 +1,7 @@
+#!/bin/bash
+
+if [ "$AUTOMATIC_UPDATES" = true ] ; then
+  curl http://localhost:2322/nominatim-update
+else
+  echo "Automatic updates are disabled. Set AUTOMATIC_UPDATES=true to enable"
+fi
