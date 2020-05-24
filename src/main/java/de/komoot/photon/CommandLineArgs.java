@@ -23,6 +23,12 @@ public class CommandLineArgs {
     @Parameter(names = "-nominatim-update", description = "fetch updates from nominatim database into photon and exit (this updates the index only without offering an API)")
     private boolean nominatimUpdate = false;
 
+    @Parameter(names = "-json-import", description = "specify json dump to feed into photon (this will delete previous index)")
+    private String jsonImport = null;
+
+    @Parameter(names = "-json-import-uid", description = "JSON entry to use for the UID (default is 'uid')")
+    private String jsonImportUid = "uid";
+
     @Parameter(names = "-languages", description = "languages nominatim importer should import and use at run-time, comma separated (default is 'en,fr,de,it')")
     private String languages = "en,fr,de,it";
 
