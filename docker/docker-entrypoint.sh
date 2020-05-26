@@ -5,7 +5,7 @@ if [ "$1" = 'photon' ]; then
 
   # if index does not yet exist, import from $JSON_DUMP_FILE (if exists) or nominatim
   if [ ! -d "/photon/photon_data/elasticsearch" ]; then
-    if [ ! -d $JSON_DUMP_FILE ]; then
+    if [ -f $JSON_DUMP_FILE ]; then
       java -Xmx256m -jar photon.jar -json-import -json $JSON_DUMP_FILE -languages $PHOTON_LANGUAGES
     else
       java -Xmx256m -jar photon.jar -nominatim-import -host $NOMINATIM_DB_HOST -port $NOMINATIM_DB_PORT -languages $PHOTON_LANGUAGES
