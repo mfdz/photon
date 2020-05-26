@@ -5,10 +5,10 @@ if [ "$1" = 'photon' ]; then
 
   # if index does not yet exist, import from $JSON_DUMP_FILE (if exists) or nominatim
   if [ ! -d "/photon/photon_data/elasticsearch" ]; then
-    if [ ! -d $JSON_DUMP_FILE ]; then
+    if [ -f $JSON_DUMP_FILE ]; then
       java -Xmx256m -jar photon.jar -json-import -json $JSON_DUMP_FILE -languages $PHOTON_LANGUAGES
     else
-      java -Xmx256m -jar photon.jar -nominatim-import -host $NOMINATIM_PORT_5432_TCP_ADDR -port $NOMINATIM_PORT_5432_TCP_PORT -languages $PHOTON_LANGUAGES
+      java -Xmx256m -jar photon.jar -nominatim-import -host $NOMINATIM_DB_HOST -port $NOMINATIM_DB_PORT -languages $PHOTON_LANGUAGES
     fi
 
     echo
@@ -19,7 +19,7 @@ if [ "$1" = 'photon' ]; then
   if [ "$AUTOMATIC_UPDATES" = true ] ; then
     # if you start photon with the credentials for the nominatim db you still have to call the /nominatim-endpoint manually
     # in this docker image this happens through a cron job at 5am every day
-    exec java -jar photon.jar -host $NOMINATIM_PORT_5432_TCP_ADDR -port $NOMINATIM_PORT_5432_TCP_PORT -languages $PHOTON_LANGUAGES "$@"
+    exec java -jar photon.jar -host $NOMINATIM_DB_HOST -port $NOMINATIM_DB_PORT -languages $PHOTON_LANGUAGES "$@"
   else
     exec java -jar photon.jar -languages $PHOTON_LANGUAGES "$@"
   fi
