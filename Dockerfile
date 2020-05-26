@@ -29,7 +29,7 @@ RUN chmod g+w,o-rw,a+x /usr/local/bin/nominatim-update
 ADD docker/crontab /etc/cron.d/nominatim-update
 RUN chmod 0644 /etc/cron.d/nominatim-update
 RUN touch /var/log/nominatim-update.log
-RUN apt-get update && apt-get -y install cron curl
+RUN apt-get update && apt-get -y --no-install-recommends install cron curl && rm -rf /var/lib/apt/lists/*
 
 # Download photon release
 RUN mkdir /photon \
