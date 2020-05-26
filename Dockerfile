@@ -19,8 +19,8 @@ ENV PHOTON_LANGUAGES ${PHOTON_LANGUAGES:-"de,en,fr"}
 
 # If photon-db does not exist in /photon/photon_data, the following properties
 # will be used to import json dump file (if existant) or create index from nominatim
-ENV NOMINATIM_PORT_5432_TCP_ADDR nominatim
-ENV NOMINATIM_PORT_5432_TCP_PORT 5432
+ENV NOMINATIM_DB_HOST nominatim
+ENV NOMINATIM_DB_PORT 5432
 ENV JSON_DUMP_FILE /photon/photon_data/photon_db.json
 
 # run the update every day at 5 o'clock
