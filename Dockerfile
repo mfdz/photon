@@ -21,6 +21,8 @@ ENV PHOTON_LANGUAGES ${PHOTON_LANGUAGES:-"de,en,fr"}
 # will be used to import json dump file (if existant) or create index from nominatim
 ENV NOMINATIM_DB_HOST nominatim
 ENV NOMINATIM_DB_PORT 5432
+ENV NOMINATIM_DB_USER nominatim
+ENV NOMINATIM_DB_PASSWORD ""
 ENV JSON_DUMP_FILE /photon/photon_data/photon_db.json
 
 # run the update every day at 5 o'clock
@@ -43,7 +45,7 @@ EXPOSE 2322 9200
 # To mount external folder supply -v /path/on/host:/photon/photon_data to docker run
 VOLUME /photon/photon_data
 COPY --from=build target/photon-*.jar photon.jar
-COPY docker/docker-entrypoint.sh /photon/docker-entrypoint.sh
+ADD docker/docker-entrypoint.sh /photon/docker-entrypoint.sh
 RUN chmod ugo+x /photon/docker-entrypoint.sh
 
 ENTRYPOINT ["/photon/docker-entrypoint.sh"]
