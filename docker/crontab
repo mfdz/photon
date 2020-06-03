@@ -1,2 +1,2 @@
-0 5 * * * root /usr/local/bin/nominatim-update 2>&1
+0 5 * * * root /usr/local/bin/nominatim-update >> /var/log/nominatim-update.log 2>&1
 # Don't remove the empty line at the end of this file. It is required to run the cron job
