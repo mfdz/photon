@@ -24,10 +24,9 @@ if [ "$1" = 'photon' ]; then
 
   if [ "$AUTOMATIC_UPDATES" = true ] ; then
     crontab /etc/cron.d/nominatim-update
-    service start cron
     # if you start photon with the credentials for the nominatim db you still have to call the /nominatim-endpoint manually
     # in this docker image this happens through a cron job at 5am every day
-    exec java -jar photon.jar \
+    cron && exec java -jar photon.jar \
       -host      $NOMINATIM_DB_HOST \
       -port      $NOMINATIM_DB_PORT \
       -user      $NOMINATIM_DB_USER \
