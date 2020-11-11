@@ -32,3 +32,21 @@ jobs:
       - name: Compile project, run tests
         run: |
           mvn --no-transfer-progress test
+
+  docker:
+    name: Build docker image
+    needs: build
+
+    if: ${{ github.ref == 'refs/heads/main' }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Publish to Dockerhub
+        uses: elgohr/Publish-Docker-Github-Action@master
+        with:
+          name: stadtnavi/hsl-map-server
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_AUTH}}
+          tags: "latest,${{ github.sha }}"
+
