@@ -4,7 +4,6 @@ import de.komoot.photon.PhotonDoc;
 import de.komoot.photon.Updater;
 import de.komoot.photon.nominatim.model.UpdateRow;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.postgis.jts.JtsWrapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -70,21 +69,9 @@ public class NominatimUpdater {
                             final List<PhotonDoc> updatedDocs = exporter.getByPlaceId(place.getPlaceId());
                             boolean wasUseful = false;
                             for (PhotonDoc updatedDoc : updatedDocs) {
-                                switch (indexedStatus) {
-                                case CREATE:
-                                    if (updatedDoc.isUsefulForIndex()) {
-                                        updater.create(updatedDoc);
-                                    }
-                                    break;
-                                case UPDATE:
-                                    if (updatedDoc.isUsefulForIndex()) {
-                                        updater.updateOrCreate(updatedDoc);
-                                        wasUseful = true;
-                                    }
-                                    break;
-                                default:
-                                    LOGGER.error(String.format("Unknown index status %d", indexedStatus));
-                                    break;
+                                if (updatedDoc.isUsefulForIndex()) {
+                                    updater.create(updatedDoc);
+                                    wasUseful = true;
                                 }
                             }
                             if (indexedStatus == UPDATE && !wasUseful) {

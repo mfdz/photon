@@ -381,6 +381,19 @@
 						"copy_to": [
 							"collector.default"
 						]
+					},
+					"housename": {
+						"type": "text",
+						"index": false,
+						"fields": {
+							"raw": {
+								"type": "text",
+								"analyzer": "index_raw"
+							}
+						},
+						"copy_to": [
+							"collector.default"
+						]
 					}
 				}
 			},
@@ -398,6 +411,10 @@
 			"osm_value": {
 				"type": "keyword",
 				"index": true
+			},
+			"object_type": {
+				"type": "text",
+				"index": false
 			},
 			"postcode": {
 				"type": "text",
@@ -561,7 +578,46 @@
 						]
 					}
 				}
-			}		
+			},
+			"county": {
+				"properties": {
+					"de": {
+						"type": "text",
+						"index": false,
+						"copy_to": [
+							"collector.de"
+						]
+					},
+					"default": {
+						"type": "text",
+						"index": false,
+						"copy_to": [
+							"collector.default"
+						]
+					},
+					"en": {
+						"type": "text",
+						"index": false,
+						"copy_to": [
+							"collector.en"
+						]
+					},
+					"fr": {
+						"type": "text",
+						"index": false,
+						"copy_to": [
+							"collector.fr"
+						]
+					},
+					"it": {
+						"type": "text",
+						"index": false,
+						"copy_to": [
+							"collector.it"
+						]
+					}
+				}
+			}
 		}
 	}
 }

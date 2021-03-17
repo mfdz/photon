@@ -197,30 +197,29 @@ public class Server {
         final Client client = this.getClient();
         final InputStream mappings = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("mappings.json");
-        final InputStream index_settings = Thread.currentThread().getContextClassLoader()
+        final InputStream indexSettings = Thread.currentThread().getContextClassLoader()
                 .getResourceAsStream("index_settings.json");
-        final Charset utf8_charset = Charset.forName("utf-8");
+        final Charset utf8Charset = Charset.forName("utf-8");
 
-        String mappingsString = IOUtils.toString(mappings, utf8_charset);
+        String mappingsString = IOUtils.toString(mappings, utf8Charset);
         JSONObject mappingsJSON = new JSONObject(mappingsString);
 
         // add all langs to the mapping
         mappingsJSON = addLangsToMapping(mappingsJSON);
 
-        JSONObject settings = new JSONObject(IOUtils.toString(index_settings, utf8_charset));
+        JSONObject settings = new JSONObject(IOUtils.toString(indexSettings, utf8Charset));
         if (shards != null) {
             settings.put("index", new JSONObject("{ \"number_of_shards\":" + shards + " }"));
         }
-        client.admin().indices().prepareCreate("photon").setSettings(settings.toString(), XContentType.JSON).execute().actionGet();
-        ;
-        client.admin().indices().preparePutMapping("photon").setType("place").setSource(mappingsJSON.toString(), XContentType.JSON).execute().actionGet();
+        client.admin().indices().prepareCreate(PhotonIndex.NAME).setSettings(settings.toString(), XContentType.JSON).execute().actionGet();
 
+        client.admin().indices().preparePutMapping(PhotonIndex.NAME).setType(PhotonIndex.TYPE).setSource(mappingsJSON.toString(), XContentType.JSON).execute().actionGet();
         log.info("mapping created: " + mappingsJSON.toString());
     }
 
     public void deleteIndex() {
         try {
-            this.getClient().admin().indices().prepareDelete("photon").execute().actionGet();
+            this.getClient().admin().indices().prepareDelete(PhotonIndex.NAME).execute().actionGet();
         } catch (IndexNotFoundException e) {
             // ignore
         }
@@ -248,7 +247,7 @@ public class Server {
                 propertiesObject = addToCollector("country", propertiesObject, copyToCollectorObject, lang);
                 propertiesObject = addToCollector("state", propertiesObject, copyToCollectorObject, lang);
                 propertiesObject = addToCollector("street", propertiesObject, copyToCollectorObject, lang);
-                propertiesObject = addToCollector("locality", propertiesObject, copyToCollectorObject, lang);
+                propertiesObject = addToCollector("district", propertiesObject, copyToCollectorObject, lang);
                 propertiesObject = addToCollector("locality", propertiesObject, copyToCollectorObject, lang);
                 propertiesObject = addToCollector("name", propertiesObject, nameToCollectorObject, lang);
 

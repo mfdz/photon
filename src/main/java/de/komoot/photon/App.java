@@ -53,6 +53,10 @@ public class App {
         try {
             Client esClient = esServer.getClient();
 
+            log.info("Make sure that the ES cluster is ready, this might take some time.");
+            esClient.admin().cluster().prepareHealth().setWaitForYellowStatus().get();
+            log.info("ES cluster is now ready.");
+
             if (args.isRecreateIndex()) {
                 shutdownES = true;
                 startRecreatingIndex(esServer);
@@ -67,9 +71,6 @@ public class App {
 
             if (args.isNominatimUpdate()) {
                 shutdownES = true;
-                log.info("Ensuring that the cluster is ready, this might take some time.");
-                // inspired by https://stackoverflow.com/a/50316299
-                esClient.admin().cluster().prepareHealth().setWaitForGreenStatus().execute().actionGet();
                 final NominatimUpdater nominatimUpdater = setupNominatimUpdater(args, esClient);
                 nominatimUpdater.update();
                 return;
@@ -203,15 +204,15 @@ public class App {
             CorsFilter.enableCORS(allowedOrigin, "get", "*");
         } else {
             before((request, response) -> {
-                response.type("application/json"); // in the other case set by enableCors
+                response.type("application/json; charset=UTF-8"); // in the other case set by enableCors
             });
         }
-        
+
         // setup search API
-        get("api", new SearchRequestHandler("api", esNodeClient, args.getLanguages()));
-        get("api/", new SearchRequestHandler("api/", esNodeClient, args.getLanguages()));
-        get("reverse", new ReverseSearchRequestHandler("reverse", esNodeClient, args.getLanguages()));
-        get("reverse/", new ReverseSearchRequestHandler("reverse/", esNodeClient, args.getLanguages()));
+        get("api", new SearchRequestHandler("api", esNodeClient, args.getLanguages(), args.getDefaultLanguage()));
+        get("api/", new SearchRequestHandler("api/", esNodeClient, args.getLanguages(), args.getDefaultLanguage()));
+        get("reverse", new ReverseSearchRequestHandler("reverse", esNodeClient, args.getLanguages(), args.getDefaultLanguage()));
+        get("reverse/", new ReverseSearchRequestHandler("reverse/", esNodeClient, args.getLanguages(), args.getDefaultLanguage()));
 
         // setup update API
         final NominatimUpdater nominatimUpdater = setupNominatimUpdater(args, esNodeClient);

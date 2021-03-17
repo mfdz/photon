@@ -24,8 +24,6 @@ import java.io.IOException;
 public class Importer implements de.komoot.photon.Importer {
     private int documentCount = 0;
 
-    private final String indexName = "photon";
-    private final String indexType = "place";
     private final Client esClient;
     private BulkRequestBuilder bulkRequest;
     private final String[] languages;
@@ -39,7 +37,8 @@ public class Importer implements de.komoot.photon.Importer {
     @Override
     public void add(PhotonDoc doc) {
         try {
-            add(Utils.convert(doc, languages).bytes(), doc.getUid());
+            this.bulkRequest.add(this.esClient.prepareIndex(PhotonIndex.NAME, PhotonIndex.TYPE).
+                    setSource(Utils.convert(doc, languages)).setId(doc.getUid()));
         } catch (IOException e) {
             log.error("could not bulk add document " + doc.getUid(), e);
         }
@@ -59,7 +58,7 @@ public class Importer implements de.komoot.photon.Importer {
     }
 
     private void add(BytesReference sourceBytes, String uid) {
-        this.bulkRequest.add(this.esClient.prepareIndex(indexName, indexType)
+        this.bulkRequest.add(this.esClient.prepareIndex(PhotonIndex.NAME, PhotonIndex.TYPE)
                 .setSource(sourceBytes, XContentType.JSON).setId(uid));
         this.documentCount += 1;
         if (this.documentCount > 0 && this.documentCount % 10000 == 0) {
@@ -81,10 +80,5 @@ public class Importer implements de.komoot.photon.Importer {
     public void finish() {
         this.saveDocuments();
         this.documentCount = 0;
-    }
-
-    public long count() {
-        return this.esClient.search(Requests.searchRequest(indexName).types(indexType).source(SearchSourceBuilder.searchSource().size(0))).actionGet().getHits()
-                .getTotalHits();
     }
 }

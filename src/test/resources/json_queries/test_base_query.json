@@ -15,10 +15,10 @@
 														"query": "berlin",
 														"operator": "OR",
 														"analyzer": "search_ngram",
-														"fuzziness": "0",
+														"fuzziness": "1",
 														"prefix_length": 2,
 														"max_expansions": 50,
-														"minimum_should_match": "100%",
+														"minimum_should_match": "-1",
 														"fuzzy_transpositions": true,
 														"lenient": false,
 														"zero_terms_query": "NONE",
@@ -32,10 +32,10 @@
 														"query": "berlin",
 														"operator": "OR",
 														"analyzer": "search_ngram",
-														"fuzziness": "0",
+														"fuzziness": "1",
 														"prefix_length": 2,
 														"max_expansions": 50,
-														"minimum_should_match": "100%",
+														"minimum_should_match": "-1",
 														"fuzzy_transpositions": true,
 														"lenient": false,
 														"zero_terms_query": "NONE",
@@ -97,7 +97,7 @@
 							},
 							"script_score": {
 								"script": {
-									"inline": "double score = 1 + doc['importance'].value * 100; score",
+									"source": "double score = 1 + doc['importance'].value * 100; score",
 									"lang": "painless"
 								}
 							}

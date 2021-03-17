@@ -3,16 +3,16 @@
 <head>
     <meta charset="utf-8">
     <title>Photon, search-as-you-type with OpenStreetMap</title>
-    <link rel="stylesheet" href="//cdn.jsdelivr.net/leaflet/0.7.3/leaflet.css"/>
-    <link rel="stylesheet" href="/static/leaflet.photon/leaflet.photon.css">
-    <link rel="stylesheet" href="/static/css/app.css">
-    <link rel="icon" href="/static/img/favicon_photon_logo.ico">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+    <link rel="stylesheet" href="static/leaflet.photon/leaflet.photon.css">
+    <link rel="stylesheet" href="static/css/app.css">
+    <link rel="icon" href="static/img/favicon_photon_logo.ico">
 </head>
 <body>
 
 <header>
     <span id="photon">photon</span>
-    <img src="/static/img/photon_logo.png" id="logo"/>
+    <img src="static/img/photon_logo.png" id="logo"/>
 
     <div id="slogan">search as you type with OpenStreetMap</div>
     <!--<div class="col third">-->
@@ -40,7 +40,7 @@
     <div class="row">
         <div class="col third">
             <a href="http://osm.org">
-                <img src="{{ url_for('static', filename='img/osm.svg') }}"/>
+                <img src="static/img/osm.svg"/>
 
                 <p>
                     Made with OpenStreetMap
@@ -50,7 +50,7 @@
         </div>
         <div class="col third">
             <a href="https://github.com/komoot/photon">
-                <img src="{{ url_for('static', filename='img/opensource.svg') }}"/>
+                <img src="static/img/opensource.svg"/>
 
                 <p>
                     Open Source<br>
@@ -61,7 +61,7 @@
         </div>
         <div class="col third">
             <a href="http://www.elasticsearch.org">
-                <img src="{{ url_for('static', filename='img/es.svg') }}"/>
+                <img src="static/img/es.svg"/>
 
                 <p>
                     Powered by ElasticSearch
@@ -80,27 +80,27 @@
             <ul>
                 <li>
                     <h4>Search</h4>
-                    <pre>photon.komoot.de/api/?<strong>q=berlin</strong></pre>
+                    <pre>photon.komoot.io/api/?<strong>q=berlin</strong></pre>
                 </li>
                 <li>
                     <h4>Search, with priority to a geo position</h4>
-                    <pre>photon.komoot.de/api/?q=berlin&amp;<strong>lat=52.3879&amp;lon=13.0582</strong></pre>
+                    <pre>photon.komoot.io/api/?q=berlin&amp;<strong>lat=52.3879&amp;lon=13.0582</strong></pre>
                 </li>
                 <li>
                     <h4>Limit number of results</h4>
-                    <pre>photon.komoot.de/api/?q=berlin&amp;<strong>limit=1</strong></pre>
+                    <pre>photon.komoot.io/api/?q=berlin&amp;<strong>limit=1</strong></pre>
                 </li>
                 <li>
                     <h4>Force preferred language</h4>
-                    <pre>photon.komoot.de/api/?q=berlin&amp;<strong>lang=de</strong></pre>
+                    <pre>photon.komoot.io/api/?q=berlin&amp;<strong>lang=de</strong></pre>
                 </li>
                 <li>
                     <h4>Reverse geocoding</h4>
-                    <pre>photon.komoot.de/reverse?lon=10&lat=52</pre>
+                    <pre>photon.komoot.io/reverse?lon=10&lat=52</pre>
                 </li>
                 <li>
                     <h4>All good GeoJSON</h4>
-  <pre>
+                    <pre>
   {
     "type": "FeatureCollection",
     "features": [
@@ -137,6 +137,16 @@
   }
   </pre>
                 </li>
+
+                <li>
+                    <h4>Note:</h4>
+                    <p style="color: #444">
+                        Until October 2020 the API was available under photon.komoot.<span
+                            style="color: #EC6F33; font-weight: bold">de</span>.
+                        Requests still work as they redirected to photon.komoot.<span
+                            style="color: #EC6F33; font-weight: bold">io</span> but please update your apps accordingly.
+                    </p>
+                </li>
             </ul>
         </div>
     </div>
@@ -155,18 +165,9 @@
 <footer>
     An OpenStreetMap project run by <a href="http://www.komoot.de">komoot</a>
 </footer>
-<script src="//cdn.jsdelivr.net/leaflet/0.7.3/leaflet.js"></script>
-<script src="/static/leaflet.photon/leaflet.photon.js"></script>
-<script type="text/javascript">
-    API_URL = '{{ API_URL }}';
-    TILELAYER = '{{ TILELAYER }}';
-    CENTER = {{ CENTER }};
-    MAXZOOM = {{ MAXZOOM }};
-
-
-
-
-</script>
-<script src="/static/js/app.js"></script>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="static/leaflet.photon/leaflet.photon.js"></script>
+<script src="config.js"></script>
+<script src="static/js/app.js"></script>
 </body>
 </html>
