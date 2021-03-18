@@ -33,23 +33,6 @@ jobs:
         run: |
           mvn --no-transfer-progress test
 
-  docker:
-    name: Build docker image
-    needs: build
-
-    if: ${{ github.ref == 'refs/heads/main' }}
-
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Publish to Dockerhub
-        uses: elgohr/Publish-Docker-Github-Action@master
-        with:
-          name: ${{ github.repository }}
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_AUTH}}
-          tags: "latest,${{ github.sha }}"
-
   import:
     runs-on: ubuntu-20.04
 
@@ -140,3 +123,24 @@ jobs:
       - name: Import Photon
         run: |
             java -jar target/photon-*.jar -nominatim-import -database nominatim -user runner -password foobar
+
+  docker:
+    name: Build docker image
+    needs:
+      - build
+      - import
+
+    if: ${{ github.ref == 'refs/heads/main' }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Publish to Dockerhub
+        uses: elgohr/Publish-Docker-Github-Action@master
+        with:
+          name: ${{ github.repository }}
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_AUTH}}
+          tags: "latest,${{ github.sha }}"
+
+
