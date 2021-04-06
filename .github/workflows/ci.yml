@@ -1,4 +1,4 @@
-name: "Continuous Integration"
+name: CI
 
 on:
   push:
@@ -34,6 +34,7 @@ jobs:
           mvn --no-transfer-progress test
 
   import:
+    name: Import OSM data from Nominatim into Photon
     runs-on: ubuntu-20.04
 
     steps:
@@ -90,7 +91,7 @@ jobs:
       - name: Install prerequisits
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq libboost-system-dev libboost-filesystem-dev libexpat1-dev zlib1g-dev libbz2-dev libpq-dev libproj-dev python3-psycopg2 python3-pyosmium python3-dotenv python3-psutil python3-jinja2 postgresql-server-dev-13 postgresql-13-postgis-3
+          sudo apt-get install -y -qq libboost-system-dev libboost-filesystem-dev libexpat1-dev zlib1g-dev libbz2-dev libpq-dev libproj-dev python3-psycopg2 python3-pyosmium python3-dotenv python3-psutil python3-jinja2 python3-icu postgresql-server-dev-13 postgresql-13-postgis-3
         shell: bash
 
       - name: Download dependencies
@@ -106,7 +107,7 @@ jobs:
 
       - name: Prepare import environment
         run: |
-            if [ ! -f monaco-latest.osm.pbf ]; then
+            if [ ! -f monaco.osm.pbf ]; then
                 wget --no-verbose https://download.geofabrik.de/europe/monaco-latest.osm.pbf
             fi
             mkdir data-env
@@ -123,6 +124,19 @@ jobs:
       - name: Import Photon
         run: |
             java -jar target/photon-*.jar -nominatim-import -database nominatim -user runner -password foobar
+
+      - name: Update Nominatim
+        run: |
+          nominatim replication --init
+          nominatim replication --no-index --once
+        shell: bash
+        working-directory: data-env
+        env:
+          NOMINATIM_REPLICATION_MAX_DIFF: 10
+
+      - name: Update Photon
+        run: |
+          java -jar target/photon-*.jar -nominatim-update -database nominatim -user runner -password foobar
 
   docker:
     name: Build docker image
