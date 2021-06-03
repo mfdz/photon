@@ -30,7 +30,7 @@ public class CommandLineArgs {
     private String jsonImportUid = "uid";
 
     @Parameter(names = "-languages", description = "languages nominatim importer should import and use at run-time, comma separated (default is 'en,fr,de,it')")
-    private String languages = "en,fr,de,it";
+    private String languages = "";
 
     @Parameter(names = "-default-language", description = "language to return results in when no explicit language is choosen by the user")
     private String defaultLanguage = "default";
@@ -38,11 +38,11 @@ public class CommandLineArgs {
     @Parameter(names = "-country-codes", description = "country codes filter that nominatim importer should import, comma separated. If empty full planet is done")
     private String countryCodes = "";
 
+    @Parameter(names = "-extra-tags", description = "additional tags to save for each place")
+    private String extraTags = "";
+
     @Parameter(names = "-json", description = "import nominatim database and dump it to a json like files in (useful for developing)")
     private String jsonDump = null;
-
-    @Parameter(names = "-recreate-index", description = "delete index and all documents, creates a new and empty photon index")
-    private boolean recreateIndex = false;
 
     @Parameter(names = "-host", description = "postgres host (default 127.0.0.1)")
     private String host = "127.0.0.1";
@@ -76,5 +76,9 @@ public class CommandLineArgs {
 
     @Parameter(names = "-h", description = "show help / usage")
     private boolean usage = false;
+
+    public String[] getLanguagesOrDefault() {
+        return getLanguages().isEmpty() ? new String[]{"en", "de", "fr", "it"}: getLanguages().split(",");
+    }
 }
 
