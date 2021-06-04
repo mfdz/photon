@@ -111,8 +111,9 @@ public class App {
      * @param esNodeClient
      */
     private static void startJsonDumpImport(CommandLineArgs args, Server esServer, Client esNodeClient) {
+        DatabaseProperties dbProperties;
         try {
-            esServer.recreateIndex(); // delete previous data
+            dbProperties = esServer.recreateIndex(args.getLanguagesOrDefault()); // clear out previous data
         } catch (IOException e) {
             log.error("cannot setup index, elastic search config files not readable", e);
             return;
@@ -120,7 +121,7 @@ public class App {
 
         log.info("starting import from json dump to photon with languages: " + args.getLanguages());
         log.info("note: languages should be supplied as contained in the dump.");
-        de.komoot.photon.elasticsearch.Importer importer = new de.komoot.photon.elasticsearch.Importer(esNodeClient, args.getLanguages());
+        de.komoot.photon.elasticsearch.Importer importer = new de.komoot.photon.elasticsearch.Importer(esNodeClient, dbProperties.getLanguages(), args.getExtraTags());
         JsonDumpConnector jsonDumpConnector = new JsonDumpConnector(importer, args.getJsonImport(), args.getJsonImportUid());
         try {
             jsonDumpConnector.readEntireDatabase();
