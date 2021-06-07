@@ -35,7 +35,7 @@ if [ "$1" = 'photon' ]; then
       -extra-tags ref:IFOPT \
       -languages $PHOTON_LANGUAGES "$@"
   else
-    exec java -jar photon.jar -extra-tags ref:IFOPT -languages $PHOTON_LANGUAGES "$@"
+    java -jar photon.jar -extra-tags ref:IFOPT -languages $PHOTON_LANGUAGES $@
   fi
 
 fi
