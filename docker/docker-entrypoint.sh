@@ -14,6 +14,7 @@ if [ "$1" = 'photon' ]; then
         -port      $NOMINATIM_DB_PORT \
         -user      $NOMINATIM_DB_USER \
         -password  $NOMINATIM_DB_PASSWORD \
+        -extra-tags ref:IFOPT \
         -languages $PHOTON_LANGUAGES
     fi
 
@@ -31,9 +32,10 @@ if [ "$1" = 'photon' ]; then
       -port      $NOMINATIM_DB_PORT \
       -user      $NOMINATIM_DB_USER \
       -password  $NOMINATIM_DB_PASSWORD \
+      -extra-tags ref:IFOPT \
       -languages $PHOTON_LANGUAGES "$@"
   else
-    exec java -jar photon.jar -languages $PHOTON_LANGUAGES "$@"
+    exec java -jar photon.jar -extra-tags ref:IFOPT -languages $PHOTON_LANGUAGES "$@"
   fi
 
 fi
