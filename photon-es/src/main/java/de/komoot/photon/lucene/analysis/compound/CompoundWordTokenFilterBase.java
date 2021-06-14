@@ -104,7 +104,11 @@ public abstract class CompoundWordTokenFilterBase extends TokenFilter {
         current = null; // not really needed, but for safety
         if (input.incrementToken()) {
             // Only words longer than minWordSize get processed
-            if (termAtt.length() >= this.minWordSize) {
+            // Avoid words where the term length does not match with the offset in the token stream.
+            // These are synonyms and will cause issues with the offsets of subterms when they are longer
+            // than the original word. Synonyms should already have the correct state of decomposition,
+            // so there is no need to decompose them further.
+            if (termAtt.length() >= this.minWordSize && termAtt.length() == (offsetAtt.endOffset() - offsetAtt.startOffset())) {
                 decompose();
                 // only capture the state if we really need it for producing new
                 // tokens
