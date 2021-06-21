@@ -1,13 +1,11 @@
 package de.komoot.photon.elasticsearch;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.node.InternalSettingsPreparer;
 import org.elasticsearch.node.Node;
@@ -15,16 +13,12 @@ import org.elasticsearch.node.NodeValidationException;
 import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.transport.Netty4Plugin;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
@@ -199,7 +193,7 @@ public class Server {
         DatabaseProperties dbProperties = new DatabaseProperties();
         dbProperties.loadFromDatabase(getClient());
 
-        loadIndexSettings().setSynonyms(synonymFile).updateIndex(getClient(), PhotonIndex.NAME);
+        loadIndexSettings().setSynonymFile(synonymFile).updateIndex(getClient(), PhotonIndex.NAME);
 
         // Sanity check: legacy databases don't save the languages, so there is no way to update
         //               the mappings consistently.

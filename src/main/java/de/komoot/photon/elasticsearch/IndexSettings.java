@@ -1,15 +1,19 @@
 package de.komoot.photon.elasticsearch;
 
+import de.komoot.photon.Utils;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.*;
 
 /**
  * Encapsulates the ES index settings for the photon index. Adds functions to
@@ -45,8 +49,9 @@ public class IndexSettings {
         return this;
     }
 
+
     /**
-     * Add query-time synonyms to the search analyzer.
+     * Add query-time synonyms and classification terms from a file.
      *
      * Synonyms need to be supplied in a simple text file with one synonym entry per line.
      * Synonyms need to be comma-separated. Only single-term synonyms are supported at this
@@ -56,32 +61,77 @@ public class IndexSettings {
      *
      * @return This object for chaining.
      */
-    public IndexSettings setSynonyms(String synonymFile) throws IOException {
+    public IndexSettings setSynonymFile(String synonymFile) throws IOException {
         if (synonymFile == null) {
             return this;
         }
 
-        insertJsonArrayAfter(settings, "/analysis/analyzer/search_ngram/filter", "lowercase", "extra_synonyms");
-        insertJsonArrayAfter(settings, "/analysis/analyzer/search_raw/filter", "lowercase", "extra_synonyms");
+        JSONObject synonymConfig = new JSONObject(new JSONTokener(new FileReader(synonymFile)));
 
-        BufferedReader br = new BufferedReader(new FileReader(synonymFile));
-
-        JSONArray synonyms = new JSONArray();
-        String line;
-        while ((line = br.readLine()) != null) {
-            if (line.indexOf(' ') >= 0) {
-                throw new RuntimeException("Synonym list must not contain any spaces or multi word terms.");
-            }
-            synonyms.put(line.toLowerCase());
-        }
-
-        JSONObject filters = (JSONObject) settings.optQuery("/analysis/filter");
-        if (filters == null) {
-            throw new RuntimeException("Analyser update: cannot find filter definition");
-        }
-        filters.put("extra_synonyms", new JSONObject().put("type", "synonym").put("synonyms", synonyms));
+        setSearchTimeSynonyms(synonymConfig.optJSONArray("search_synonyms"));
+        setClassificationTerms(synonymConfig.optJSONArray("classification_terms"));
 
         return this;
+    }
+
+    public IndexSettings setSearchTimeSynonyms(JSONArray synonyms) {
+        if (synonyms != null) {
+            insertSynonymFilter("extra_synonyms", synonyms);
+        }
+
+        return this;
+    }
+
+    public IndexSettings setClassificationTerms(JSONArray terms) {
+        if (terms == null) {
+            return this;
+        }
+
+        // Collect for each term in the list the possible classification expansions.
+        Map<String, Set<String>> collector = new HashMap<>();
+        for (int i = 0; i < terms.length(); i++) {
+            JSONObject descr = terms.getJSONObject(i);
+
+            String classString = Utils.buildClassificationString(descr.getString("key"), descr.getString("value")).toLowerCase();
+
+            if (classString != null) {
+                JSONArray jsonTerms = descr.getJSONArray("terms");
+                for (int j = 0; j < jsonTerms.length(); j++) {
+                    String term = jsonTerms.getString(j).toLowerCase().trim();
+                    if (term.indexOf(' ') >= 0) {
+                        throw new RuntimeException("Syntax error in synonym file: only single word classification terms allowed.");
+                    }
+
+                    if (term.length() > 1) {
+                        collector.computeIfAbsent(term, k -> new HashSet<>()).add(classString);
+                    }
+                }
+            }
+        }
+
+        // Create the final list of synonyms. A term can expand to any classificator or not at all.
+        JSONArray synonyms = new JSONArray();
+        collector.forEach((term, classificators) ->
+            synonyms.put(term + " => " + term + "," + String.join(",", classificators)));
+
+        insertSynonymFilter("classification_synonyms", synonyms);
+
+        return this;
+    }
+
+    private void insertSynonymFilter(String filterName, JSONArray synonyms) {
+        if (!synonyms.isEmpty()) {
+            // Create a filter for the synonyms.
+            JSONObject filters = (JSONObject) settings.optQuery("/analysis/filter");
+            if (filters == null) {
+                throw new RuntimeException("Analyser update: cannot find filter definition");
+            }
+            filters.put(filterName, new JSONObject().put("type", "synonym").put("synonyms", synonyms));
+
+            // add synonym filter to the search analyzers
+            insertJsonArrayAfter("/analysis/analyzer/search_ngram", "filter", "lowercase", filterName);
+            insertJsonArrayAfter("/analysis/analyzer/search_raw", "filter", "lowercase", filterName);
+        }
     }
 
     /**
@@ -109,28 +159,36 @@ public class IndexSettings {
         client.admin().indices().prepareOpen(PhotonIndex.NAME).execute().actionGet();
     }
 
-    /**
+        /**
      * Insert the given value into the array after the string given by positionString.
      * If the position string is not found, throws a runtime error.
      *
-     * @param obj            JSON object to insert into.
      * @param jsonPointer    Path description of the array to insert into.
      * @param positionString Marker string after which to insert.
      * @param value          Value to insert.
      */
-    private void insertJsonArrayAfter(JSONObject obj, String jsonPointer, String positionString, String value) {
-        JSONArray array = (JSONArray) obj.optQuery(jsonPointer);
+    private void insertJsonArrayAfter(String jsonPointer, String field, String positionString, String value) {
+        JSONObject parent = (JSONObject) settings.optQuery(jsonPointer);
+        JSONArray array = parent == null ? null : parent.optJSONArray(field);
         if (array == null) {
             throw new RuntimeException("Analyser update: cannot find JSON array at" + jsonPointer);
         }
 
+        // We can't just insert items, so build a new array instead.
+        JSONArray new_array = new JSONArray();
+        boolean done = false;
         for (int i = 0; i < array.length(); i++) {
-            if (positionString.equals(array.getString(i))) {
-                array.put(i + 1, value);
-                return;
+            new_array.put(array.get(i));
+            if (!done && positionString.equals(array.getString(i))) {
+                new_array.put(value);
+                done = true;
             }
         }
 
-        throw new RuntimeException("Analyser update: cannot find position string " + positionString);
+        if (!done) {
+            throw new RuntimeException("Analyser update: cannot find position string " + positionString);
+        }
+
+        parent.put(field, new_array);
     }
 }
