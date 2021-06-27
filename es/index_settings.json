@@ -24,7 +24,6 @@
 				"filter": [
 					"lowercase",
 					"german_normalization",
-					"photon_hyphenation_decompounder",
 					"asciifolding"
 				]
 			},
